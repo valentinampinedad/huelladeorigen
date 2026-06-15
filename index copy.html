@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huella de Origen · Portal de Acceso</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+    :root {
+      --bg: #0A0E0B;
+      --surface: #111714;
+      --surface-hover: #181E19;
+      --verde: #22C55E;
+      --verde-dim: rgba(34,197,94,0.15);
+      --texto: #F8FAF9;
+      --gris: #94A3B8;
+      --borde: #252E27;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans', sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--texto);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-logo {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--gris);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .role-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .role-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .role-card:hover {
+      background: var(--surface-hover);
+      border-color: #3f4e43;
+    }
+
+    .role-card.active {
+      background: var(--verde-dim);
+      border-color: var(--verde);
+    }
+
+    .ruc-field {
+      display: none;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .ruc-field.show { display: block; }
+    .ruc-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .ruc-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0A0E0B;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      color: var(--texto);
+      transition: border-color 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .ruc-input:focus {
+      outline: none;
+      border-color: var(--verde);
+    }
+    .ruc-hint {
+      font-size: 11px;
+      color: var(--gris);
+      margin-top: 6px;
+    }
+    .ruc-error {
+      font-size: 12px;
+      color: #EF4444;
+      margin-top: 6px;
+      display: none;
+    }
+    .ruc-error.show { display: block; }
+
+    .role-icon { font-size: 24px; flex-shrink: 0; }
+    .role-title { font-size: 15px; font-weight: 600; color: var(--texto); margin-bottom: 2px; }
+    .role-desc { font-size: 12px; color: var(--gris); line-height: 1.3; }
+
+    .btn-ingresar {
+      width: 100%;
+      padding: 14px;
+      background: var(--verde);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-ingresar:hover { opacity: 0.9; }
+    .btn-ingresar:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--gris);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <div class="brand-logo">🌳</div>
+    <h1>Huella de Origen</h1>
+    <p class="subtitle">Sistema de Trazabilidad Maderable · OSINFOR</p>
+
+    <div class="role-grid">
+      <div class="role-card" onclick="seleccionarRol('productor', this)">
+        <div class="role-icon">🪓</div>
+        <div>
+          <div class="role-title">Productor / Regente Forestal</div>
+          <div class="role-desc">Registro de lotes en campo, creación de GTF y sincronización offline.</div>
+        </div>
+      </div>
+
+      <div class="role-card" onclick="seleccionarRol('supervisor', this)">
+        <div class="role-icon">👮🏽‍♂️</div>
+        <div>
+          <div class="role-title">Supervisor de Puesto de Control</div>
+          <div class="role-desc">Verificación de guías, especies, volumetría y documentos en ruta.</div>
+        </div>
+      </div>
+
+      <div class="role-card" onclick="seleccionarRol('consumidor', this)">
+        <div class="role-icon">🪑</div>
+        <div>
+          <div class="role-title">Consumidor Final / Comprador</div>
+          <div class="role-desc">Consulta pública de origen legal e impacto de la madera adquirida.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ruc-field" id="rucField">
+      <label class="ruc-label" for="rucInput">RUC del titular forestal</label>
+      <input class="ruc-input" id="rucInput" type="text" placeholder="Ej: 20527160121" maxlength="11" oninput="validarRUC()">
+      <div class="ruc-hint">Ingresa el RUC del concesionario o comunidad nativa.</div>
+      <div class="ruc-error" id="rucError">RUC no encontrado en el registro OSINFOR.</div>
+    </div>
+
+    <button class="btn-ingresar" id="btnIngresar" onclick="ingresar()" disabled>
+      Seleccione un perfil para ingresar
+    </button>
+  </div>
+
+  <div class="footer">
+    Hackatón TransformaGob 2026<br>
+    Prototipo de Integración
+  </div>
+
+  <script>
+    let rolSeleccionado = null;
+
+    // Known RUCs in the prototype — keyed to a display name
+    const RUC_DB = {
+      '20527160121': { nombre: 'CCNN Bélgica', permiso: 'MAD-D-008-15' },
+    };
+
+    function seleccionarRol(rol, elemento) {
+      rolSeleccionado = rol;
+
+      document.querySelectorAll('.role-card').forEach(card => card.classList.remove('active'));
+      elemento.classList.add('active');
+
+      const rucField = document.getElementById('rucField');
+      const btn = document.getElementById('btnIngresar');
+      const rucInput = document.getElementById('rucInput');
+
+      if (rol === 'productor') {
+        rucField.classList.add('show');
+        rucInput.focus();
+        // Button stays disabled until a valid RUC is entered
+        btn.disabled = true;
+        btn.textContent = 'Ingresa tu RUC para continuar';
+      } else {
+        rucField.classList.remove('show');
+        document.getElementById('rucError').classList.remove('show');
+        btn.disabled = false;
+        btn.textContent = 'Ingresar como ' + (rol === 'supervisor' ? 'Supervisor' : 'Consumidor');
+      }
+    }
+
+    function validarRUC() {
+      const val = document.getElementById('rucInput').value.trim();
+      const btn = document.getElementById('btnIngresar');
+      const err = document.getElementById('rucError');
+
+      if (val.length < 11) {
+        btn.disabled = true;
+        btn.textContent = 'Ingresa tu RUC para continuar';
+        err.classList.remove('show');
+        return;
+      }
+
+      if (RUC_DB[val]) {
+        btn.disabled = false;
+        btn.textContent = `Ingresar como ${RUC_DB[val].nombre}`;
+        err.classList.remove('show');
+      } else {
+        btn.disabled = true;
+        btn.textContent = 'RUC no registrado';
+        err.classList.add('show');
+      }
+    }
+
+    function ingresar() {
+      if (!rolSeleccionado) return;
+
+      const btn = document.getElementById('btnIngresar');
+      btn.textContent = 'Autenticando...';
+
+      setTimeout(() => {
+        if (rolSeleccionado === 'productor') {
+          const ruc = document.getElementById('rucInput').value.trim();
+          window.location.href = `productor_demo.html?ruc=${ruc}`;
+        } else if (rolSeleccionado === 'supervisor') {
+          window.location.href = 'punto_control_demo.html';
+        } else if (rolSeleccionado === 'consumidor') {
+          window.location.href = 'comprador_demo.html';
+        }
+      }, 600);
+    }
+
+    // Allow pressing Enter in RUC field to submit
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('rucInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') ingresar();
+      });
+    });
+  </script>
+
+</body>
+</html>

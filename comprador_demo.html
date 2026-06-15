@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huella de Origen · Verificar Lote</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap');
+:root {
+  --bosque: #1A3D20; --bosque2: #224D29; --hoja: #2E7D32; --hoja-light: #E8F5E9;
+  --hoja-mid: #66BB6A; --dorado: #B8860B; --dorado-light: #FFF8E1;
+  --amber: #C77800; --amber-light: #FFF3E0; --rojo: #C62828; --rojo-light: #FFEBEE;
+  --texto: #1A1A1A; --texto2: #555; --texto3: #888; --borde: #E0E0E0;
+  --bg: #F7F9F7; --white: #FFFFFF; --radio: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--texto); min-height: 100vh; }
+.header { background: var(--bosque); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.header-logo { width: 30px; height: 30px; background: var(--hoja-mid); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.header-name { font-family: 'Fraunces', serif; font-size: 18px; color: #fff; letter-spacing: -0.3px; }
+.header-name span { color: var(--hoja-mid); }
+.header-badge { font-size: 11px; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; }
+.container { max-width: 720px; margin: 0 auto; padding: 32px 20px 60px; }
+.search-panel { background: var(--white); border: 1px solid var(--borde); border-radius: var(--radio); padding: 24px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.search-title { font-family: 'Fraunces', serif; font-size: 22px; color: var(--bosque); margin-bottom: 6px; }
+.search-sub { font-size: 14px; color: var(--texto2); margin-bottom: 20px; line-height: 1.5; }
+.search-row { display: flex; gap: 10px; }
+.search-input { flex: 1; padding: 13px 16px; border: 1.5px solid var(--borde); border-radius: var(--radio); font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--texto); background: var(--bg); transition: border-color 0.15s; }
+.search-input:focus { outline: none; border-color: var(--hoja); }
+.search-btn { padding: 13px 24px; background: var(--hoja); color: white; border: none; border-radius: var(--radio); font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.search-btn:hover { background: var(--bosque); }
+.search-hint { font-size: 12px; color: var(--texto3); margin-top: 10px; }
+.search-hint a { color: var(--hoja); cursor: pointer; }
+
+.op-box { border-radius: var(--radio); padding: 20px 24px; margin-bottom: 20px; border: 1.5px solid; display: none; }
+.op-box.show { display: block; }
+.op-verde { background: var(--hoja-light); border-color: var(--hoja-mid); }
+.op-amber { background: var(--amber-light); border-color: #FFB74D; }
+.op-rojo { background: var(--rojo-light); border-color: #EF9A9A; }
+.op-top { display: flex; align-items: center; gap: 16px; }
+.op-medidor { width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Fraunces', serif; }
+.op-verde .op-medidor { background: var(--hoja); color: #fff; }
+.op-amber .op-medidor { background: var(--amber); color: #fff; }
+.op-rojo .op-medidor { background: var(--rojo); color: #fff; }
+.op-medidor-num { font-size: 24px; line-height: 1; font-weight: 700; }
+.op-medidor-lbl { font-size: 9px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.05em; }
+.op-info { flex: 1; }
+.op-titulo { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 4px; }
+.op-verde .op-titulo { color: var(--bosque); }
+.op-amber .op-titulo { color: var(--amber); }
+.op-rojo .op-titulo { color: var(--rojo); }
+.op-msg { font-size: 12px; color: var(--texto2); line-height: 1.5; }
+.op-factores { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.08); }
+.op-fact { text-align: center; }
+.op-fact-num { font-family: 'Fraunces', serif; font-size: 20px; color: var(--texto); }
+.op-fact-lbl { font-size: 9px; color: var(--texto3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.op-detalle { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.08); }
+.op-dato-lbl { font-size: 10px; color: var(--texto3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.op-dato-val { font-size: 13px; font-weight: 600; color: var(--texto); }
+.op-rangos { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 6px; }
+.op-rango { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--texto2); }
+.op-rango-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rd-verde { background: var(--hoja); } .rd-amber { background: var(--amber); } .rd-rojo { background: var(--rojo); }
+
+.sello-oficial { background: var(--dorado-light); border: 1px solid #E8D5A0; border-radius: var(--radio); padding: 16px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.sello-icon { font-size: 36px; flex-shrink: 0; }
+.sello-text { flex: 1; }
+.sello-title { font-size: 13px; font-weight: 600; color: var(--dorado); margin-bottom: 2px; }
+.sello-sub { font-size: 12px; color: var(--texto2); line-height: 1.5; }
+.certificado { background: var(--white); border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+.cert-hero { background: linear-gradient(135deg, var(--bosque), var(--bosque2)); padding: 28px 28px 24px; display: flex; align-items: flex-start; gap: 20px; }
+.cert-sello { width: 72px; height: 72px; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+.cert-hero-text { flex: 1; }
+.cert-status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cert-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hoja-mid); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.8)} }
+.cert-status-label { font-size: 11px; font-weight: 600; color: var(--hoja-mid); text-transform: uppercase; letter-spacing: 0.1em; }
+.cert-title { font-family: 'Fraunces', serif; font-size: 24px; color: #fff; line-height: 1.2; margin-bottom: 6px; }
+.cert-sub { font-size: 13px; color: rgba(255,255,255,0.65); }
+.cert-qr-strip { background: var(--dorado-light); border-bottom: 1px solid #E8D5A0; padding: 16px 28px; display: flex; align-items: center; gap: 20px; }
+#qr-cert { flex-shrink: 0; }
+.cert-qr-info { flex: 1; }
+.cert-qr-label { font-size: 11px; font-weight: 600; color: var(--dorado); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.cert-qr-url { font-size: 12px; color: var(--texto2); word-break: break-all; }
+.cert-qr-note { font-size: 11px; color: var(--texto3); margin-top: 6px; font-style: italic; }
+.cert-body { padding: 0; }
+.cert-section { padding: 20px 28px; border-bottom: 1px solid var(--borde); }
+.cert-section:last-child { border-bottom: none; }
+.cert-section-title { font-family: 'Fraunces', serif; font-size: 13px; color: var(--bosque); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.cert-field { padding: 10px 0; border-bottom: 1px solid var(--borde); }
+.cert-field:nth-last-child(-n+2) { border-bottom: none; }
+.cert-field-label { font-size: 10px; font-weight: 600; color: var(--texto3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; }
+.cert-field-val { font-size: 13px; font-weight: 500; color: var(--texto); }
+.cert-field-val.green { color: var(--hoja); }
+.prog-strip { background: var(--bg); padding: 16px 28px; border-bottom: 1px solid var(--borde); }
+.prog-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto2); margin-bottom: 6px; }
+.prog-track { height: 6px; background: var(--borde); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; background: var(--hoja); }
+.species-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.species-tag { background: var(--hoja-light); color: var(--hoja); font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; }
+.tl-cert-item { display: grid; grid-template-columns: 32px 1fr; gap: 0; }
+.tl-cert-left { display: flex; flex-direction: column; align-items: center; padding-top: 2px; }
+.tl-cert-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.tld-verde { background: var(--hoja-light); } .tld-azul { background: #E3F2FD; } .tld-amber { background: #FFF8E1; }
+.tl-cert-line { width: 2px; background: var(--borde); flex: 1; margin: 4px auto; }
+.tl-cert-content { padding: 0 0 18px 14px; }
+.tl-cert-title { font-size: 13px; font-weight: 600; color: var(--texto); }
+.tl-cert-date { font-size: 11px; color: var(--texto3); margin-top: 2px; }
+.tl-cert-body { font-size: 12px; color: var(--texto2); margin-top: 5px; line-height: 1.6; }
+.tl-cert-check { display: inline-flex; align-items: center; gap: 4px; background: var(--hoja-light); color: var(--hoja); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-top: 5px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.action-btn { flex: 1; min-width: 160px; padding: 13px 20px; border-radius: var(--radio); font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+.action-primary { background: var(--hoja); color: white; border: none; }
+.action-primary:hover { background: var(--bosque); }
+.action-secondary { background: transparent; color: var(--hoja); border: 1.5px solid var(--hoja); }
+.action-secondary:hover { background: var(--hoja-light); }
+.footer { text-align: center; padding: 32px 20px 20px; }
+.footer-logo { font-size: 13px; color: var(--texto3); }
+.footer-logo strong { color: var(--texto2); }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bosque); color: white; padding: 12px 20px; border-radius: var(--radio); font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 999; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media(max-width:500px) {
+  .cert-hero { flex-direction: column; }
+  .cert-qr-strip { flex-direction: column; text-align: center; }
+  .cert-grid, .op-detalle, .op-factores { grid-template-columns: 1fr; }
+  .search-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">🌿</div>
+    <div class="header-name">Huella<span> de Origen</span></div>
+  </div>
+  <div class="header-badge" style="display:flex;align-items:center;gap:10px;">
+    <a href="indexcopy.html" style="font-size:11px;color:rgba(255,255,255,0.45);text-decoration:none;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.08);">← Portal</a>
+    <span>OSINFOR · Verificación oficial</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="search-panel">
+    <div class="search-title">Verificar origen legal de madera</div>
+    <div class="search-sub">Ingresa el número de Guía de Transporte Forestal (GTF) o escanea el QR del lote con la cámara de tu celular.</div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" value="017-00001729" placeholder="Ej: 017-00001729">
+      <button class="search-btn" onclick="verificar()">🔍 Verificar</button>
+    </div>
+    <div class="search-hint">Sin cuenta · Sin app · Disponible en <a onclick="cambiarIdioma('en')">English</a> · <a onclick="cambiarIdioma('fr')">Français</a></div>
+  </div>
+
+  <div class="op-box" id="opBox">
+    <div class="op-top">
+      <div class="op-medidor">
+        <div class="op-medidor-num" id="opNum">—</div>
+        <div class="op-medidor-lbl">índice</div>
+      </div>
+      <div class="op-info">
+        <div class="op-titulo" id="opTitulo">Índice de operabilidad</div>
+        <div class="op-msg" id="opMsg">Calculando…</div>
+      </div>
+    </div>
+    <div class="op-factores" id="opFactores"></div>
+    <div class="op-detalle">
+      <div>
+        <div class="op-dato-lbl">Volumen LOE vs Censo</div>
+        <div class="op-dato-val" id="opVol">—</div>
+      </div>
+      <div>
+        <div class="op-dato-lbl">Árboles talados vs censados</div>
+        <div class="op-dato-val" id="opArb">—</div>
+      </div>
+    </div>
+    <div class="op-rangos">
+      <div class="op-rango"><div class="op-rango-dot rd-verde"></div><strong>80–100:</strong>&nbsp;Alta consistencia LOE ↔ Censo. Trazabilidad confiable.</div>
+      <div class="op-rango"><div class="op-rango-dot rd-amber"></div><strong>50–79:</strong>&nbsp;Consistencia media. Diferencias que ameritan revisión.</div>
+      <div class="op-rango"><div class="op-rango-dot rd-rojo"></div><strong>0–49:</strong>&nbsp;Baja consistencia. Requiere fiscalización de OSINFOR.</div>
+    </div>
+  </div>
+
+  <div class="sello-oficial">
+    <div class="sello-icon">🏛️</div>
+    <div class="sello-text">
+      <div class="sello-title">Verificación oficial del Estado peruano</div>
+      <div class="sello-sub">Este sistema está respaldado por OSINFOR (Organismo de Supervisión de los Recursos Forestales y de Fauna Silvestre) y los datos del SIGOsfc. Alternativa oficial gratuita a la certificación FSC.</div>
+    </div>
+  </div>
+
+  <div class="certificado">
+    <div class="cert-hero">
+      <div class="cert-sello" id="certSelloIcon">✅</div>
+      <div class="cert-hero-text">
+        <div class="cert-status">
+          <div class="cert-status-dot"></div>
+          <div class="cert-status-label" id="certStatusLabel">Origen legal verificado</div>
+        </div>
+        <div class="cert-title" id="certTitle">GTF —</div>
+        <div class="cert-sub" id="certSub">Cargando…</div>
+      </div>
+    </div>
+
+    <div class="cert-qr-strip">
+      <div id="qr-cert"></div>
+      <div class="cert-qr-info">
+        <div class="cert-qr-label">Código QR del lote</div>
+        <div class="cert-qr-url" id="certQrUrl">—</div>
+        <div class="cert-qr-note">Escanea con la cámara de cualquier celular para compartir esta verificación.</div>
+      </div>
+    </div>
+
+    <div class="cert-body">
+      <div class="cert-section">
+        <div class="cert-section-title">🌲 Datos del lote</div>
+        <div class="cert-grid" id="datosLote"></div>
+      </div>
+
+      <div class="prog-strip">
+        <div class="prog-label">
+          <span id="progVolLabel">Volumen: —</span>
+          <span id="progPctLabel">—</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%;"></div></div>
+        <div style="font-size:11px;color:var(--texto3);margin-top:6px;" id="progSub">—</div>
+      </div>
+
+      <div class="cert-section">
+        <div class="cert-section-title">🌿 Especies certificadas</div>
+        <div class="species-list" id="speciesList"></div>
+      </div>
+
+      <div class="cert-section">
+        <div class="cert-section-title">🔗 Cadena de custodia verificada</div>
+        <div class="tl-cert" id="cadenaCustodia"></div>
+      </div>
+
+      <div class="cert-section">
+        <div class="actions">
+          <button class="action-btn action-primary" onclick="descargar()">📄 Descargar certificado PDF</button>
+          <button class="action-btn action-secondary" onclick="compartir()">🔗 Compartir verificación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:8px;">
+    <div style="font-size:13px;color:var(--texto3);">¿Quieres verificar otro lote?</div>
+    <div style="margin-top:10px;display:flex;gap:10px;max-width:400px;margin:10px auto 0;">
+      <input type="text" class="search-input" id="searchInput2" placeholder="N° GTF..." style="font-size:13px;padding:11px 14px;">
+      <button class="search-btn" style="padding:11px 18px;font-size:13px;" onclick="verificar2()">Verificar</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-logo">
+    🌿 <strong>Huella de Origen</strong> · Sistema oficial de trazabilidad forestal<br>
+    <span style="font-size:11px;">Desarrollado para OSINFOR · Hackatón TransformaGob 2026</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DEMO MODE: fallback data, no backend needed ───────────────────────
+const LOTES_DEMO = {
+  '017-00001729': {
+    num_gtf: '017-00001729', titular: 'CCNN Bélgica', titular_ruc: '20527160121',
+    representante: 'D. Pacheco Villanueva', parcela: 'Parcela 01 · Iñapari',
+    vol_total_m3: 8240, permiso_vigente_hasta: '21/07/2028',
+    coordenadas: { region: 'Madre de Dios', utm_este: '406,800', utm_norte: '8,785,600' },
+    semaforo: { estado: 'verde' },
+    operabilidad: { indice: 91, estado: 'verde', trazabilidad: 94, consistencia_especie: 89, validez_dimensional: 90,
+      mensaje: 'Alta consistencia entre el LOE y el censo forestal. Trazabilidad confiable.',
+      vol_talado: 7820, vol_censo: 8600, arboles_talados: 124, arboles_censo: 138 },
+    especies: [{ nombre_comun: 'Cedro' }, { nombre_comun: 'Lupuna' }, { nombre_comun: 'Ishpingo' }],
+    cadena_custodia: [
+      { etapa: 'bosque', titulo: 'Tala y cubicación en campo', fecha: '2025-09-10', lugar: 'CCNN Bélgica · PC01', detalle: 'Árbol 3401 registrado en LOE. GPS capturado. Foto de troza adjunta.', verificado: true },
+      { etapa: 'emision_gtf', titulo: 'Emisión de Guía de Transporte Forestal', fecha: '2025-09-18', lugar: 'ARFFS Madre de Dios', detalle: 'GTF 017-00001729 emitida por la autoridad regional. Volumen: 8,240 m³.', verificado: true },
+      { etapa: 'control_vial', titulo: 'Paso por Puesto de Control', fecha: '2025-10-07', lugar: 'Iñapari-Iberia Km 7', detalle: 'Verificación por J. Mamani Cárdenas. Placa B7K-212. Estado: LEGAL.', verificado: true },
+      { etapa: 'transformacion', titulo: 'Recepción en planta de transformación', fecha: null, lugar: 'CTP Agroindustrial Santa Teresa · Lima', detalle: 'Pendiente de recepción y registro en destino final.', verificado: false },
+    ]
+  },
+  '017-00002018': {
+    num_gtf: '017-00002018', titular: 'CCNN Bélgica', titular_ruc: '20527160121',
+    representante: 'D. Pacheco Villanueva', parcela: 'Parcela 03 · Iñapari',
+    vol_total_m3: 16534, permiso_vigente_hasta: '21/07/2028',
+    coordenadas: { region: 'Madre de Dios', utm_este: '408,200', utm_norte: '8,786,100' },
+    semaforo: { estado: 'amber' },
+    operabilidad: { indice: 67, estado: 'amber', trazabilidad: 72, consistencia_especie: 65, validez_dimensional: 64,
+      mensaje: 'Consistencia media. Diferencia de volumen entre LOE y censo amerita revisión.',
+      vol_talado: 15900, vol_censo: 22547, arboles_talados: 298, arboles_censo: 310 },
+    especies: [{ nombre_comun: 'Ishpingo' }, { nombre_comun: 'Shihuahuaco' }, { nombre_comun: 'Catahua' }, { nombre_comun: 'Manchinga' }],
+    cadena_custodia: [
+      { etapa: 'bosque', titulo: 'Tala y cubicación en campo', fecha: '2025-10-01', lugar: 'CCNN Bélgica · PC03', detalle: 'Registros LOE completados. 298 árboles talados de 310 censados.', verificado: true },
+      { etapa: 'emision_gtf', titulo: 'Emisión de Guía de Transporte Forestal', fecha: '2025-10-21', lugar: 'ARFFS Madre de Dios', detalle: 'GTF 017-00002018 emitida. Vence 20/11/2025.', verificado: true },
+      { etapa: 'control_vial', titulo: 'Paso por Puesto de Control', fecha: '2025-10-22', lugar: 'Iñapari-Iberia Km 7', detalle: 'En tránsito. Pendiente de verificación en puesto.', verificado: false },
+      { etapa: 'transformacion', titulo: 'Recepción en planta de transformación', fecha: null, lugar: 'CTP Agroindustrial Santa Teresa · Lima', detalle: 'Pendiente.', verificado: false },
+    ]
+  }
+};
+
+let gtfActual = '017-00001729';
+
+async function cargarLote(num) {
+  toast('🔍 Verificando ' + num + '…');
+
+  // Try real API first, fall back to demo data
+  let d = null;
+  try {
+    const res = await fetch(`http://localhost:8000/api/lote/${num}`, { signal: AbortSignal.timeout(2000) });
+    if (res.ok) d = await res.json();
+  } catch(e) { /* offline — use demo data */ }
+
+  if (!d) {
+    d = LOTES_DEMO[num];
+    if (!d) { toast('⚠️ Lote no encontrado. Prueba: 017-00001729 ó 017-00002018'); return; }
+  }
+
+  gtfActual = num;
+
+    // ── BOX DE OPERABILIDAD ──
+    const op = d.operabilidad;
+    const box = document.getElementById('opBox');
+    if (op) {
+      box.className = 'op-box show op-' + op.estado;
+      document.getElementById('opNum').textContent = op.indice;
+      document.getElementById('opTitulo').textContent =
+        op.estado === 'verde' ? 'Operabilidad alta' : op.estado === 'amber' ? 'Operabilidad media' : 'Operabilidad baja';
+      document.getElementById('opMsg').textContent = op.mensaje;
+
+      // 3 factores desglosados
+      document.getElementById('opFactores').innerHTML = `
+        <div class="op-fact"><div class="op-fact-num">${Math.round(op.trazabilidad)}%</div><div class="op-fact-lbl">Trazabilidad código</div></div>
+        <div class="op-fact"><div class="op-fact-num">${Math.round(op.consistencia_especie)}%</div><div class="op-fact-lbl">Consistencia especie</div></div>
+        <div class="op-fact"><div class="op-fact-num">${Math.round(op.validez_dimensional)}%</div><div class="op-fact-lbl">Validez dimensional</div></div>`;
+
+      document.getElementById('opVol').textContent =
+        `${op.vol_talado.toLocaleString('es-PE')} / ${op.vol_censo.toLocaleString('es-PE')} m³`;
+      document.getElementById('opArb').textContent =
+        `${op.arboles_talados} talados / ${op.arboles_censo} censados`;
+    } else {
+      box.className = 'op-box';
+    }
+
+    // Hero
+    const verde = d.semaforo.estado === 'verde';
+    document.getElementById('certSelloIcon').textContent = verde ? '✅' : d.semaforo.estado === 'amber' ? '⚠️' : '❌';
+    document.getElementById('certStatusLabel').textContent = verde ? 'Origen legal verificado' : 'Requiere revisión';
+    document.getElementById('certTitle').innerHTML = `GTF ${d.num_gtf}<br>${d.titular}`;
+    document.getElementById('certSub').textContent = `${d.coordenadas.region}, Perú · Verificado hoy · ${verde ? 'Vigente' : d.semaforo.estado}`;
+
+    // QR
+    const qc = document.getElementById('qr-cert');
+    qc.innerHTML = '';
+    new QRCode(qc, { text: `https://huelladeorigen.osinfor.gob.pe/lote/${d.num_gtf}`, width: 100, height: 100, colorDark: '#1A3D20', colorLight: '#FFF8E1', correctLevel: QRCode.CorrectLevel.M });
+    document.getElementById('certQrUrl').textContent = `huelladeorigen.osinfor.gob.pe/lote/${d.num_gtf}`;
+
+    // Datos del lote
+    document.getElementById('datosLote').innerHTML = `
+      <div class="cert-field"><div class="cert-field-label">N° Guía de Transporte</div><div class="cert-field-val green">${d.num_gtf}</div></div>
+      <div class="cert-field"><div class="cert-field-label">Titular del permiso</div><div class="cert-field-val">${d.titular}</div></div>
+      <div class="cert-field"><div class="cert-field-label">Región de origen</div><div class="cert-field-val">${d.coordenadas.region}, Perú</div></div>
+      <div class="cert-field"><div class="cert-field-label">Parcela de corta</div><div class="cert-field-val">${d.parcela}</div></div>
+      <div class="cert-field"><div class="cert-field-label">Vigente hasta</div><div class="cert-field-val green">${d.permiso_vigente_hasta}</div></div>`;
+
+    // Progreso volumen
+    document.getElementById('progVolLabel').innerHTML = `Volumen en este GTF: <strong>${d.vol_total_m3.toLocaleString('es-PE')} m³</strong>`;
+    if (op) {
+      const pct = Math.min(Math.round(op.vol_talado / op.vol_censo * 100), 100);
+      document.getElementById('progPctLabel').textContent = `${pct}% del censado`;
+      document.getElementById('progFill').style.width = pct + '%';
+      document.getElementById('progSub').textContent = `Talado ${op.vol_talado.toLocaleString('es-PE')} m³ de ${op.vol_censo.toLocaleString('es-PE')} m³ censados · Plan Operativo 19`;
+    } else {
+      document.getElementById('progPctLabel').textContent = '';
+      document.getElementById('progSub').textContent = 'Plan Operativo 19';
+    }
+
+    // Especies
+    document.getElementById('speciesList').innerHTML = d.especies.map(e => `<span class="species-tag">${e.nombre_comun}</span>`).join('');
+
+    // Cadena de custodia
+    const iconos = { bosque:'🌲', emision_gtf:'📋', control_vial:'🛡️', transformacion:'🏭' };
+    const clases = { bosque:'tld-verde', emision_gtf:'tld-verde', control_vial:'tld-azul', transformacion:'tld-amber' };
+    document.getElementById('cadenaCustodia').innerHTML = d.cadena_custodia.map((c, i) => {
+      const last = i === d.cadena_custodia.length - 1;
+      const fecha = c.fecha ? new Date(c.fecha).toLocaleDateString('es-PE') : '—';
+      return `
+        <div class="tl-cert-item">
+          <div class="tl-cert-left">
+            <div class="tl-cert-dot ${clases[c.etapa] || 'tld-verde'}">${iconos[c.etapa] || '•'}</div>
+            ${last ? '' : '<div class="tl-cert-line"></div>'}
+          </div>
+          <div class="tl-cert-content">
+            <div class="tl-cert-title">${c.titulo}</div>
+            <div class="tl-cert-date">${fecha} · ${c.lugar}</div>
+            <div class="tl-cert-body">${c.detalle}</div>
+            ${c.verificado ? '<div class="tl-cert-check">✅ Verificado por ARFFS</div>' : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    toast(`✅ ${num} — Verificación completa`);
+}
+
+function verificar() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) { toast('Ingresa un N° GTF'); return; }
+  cargarLote(val);
+}
+function verificar2() {
+  const val = document.getElementById('searchInput2').value.trim();
+  if (!val) { toast('Ingresa un N° GTF'); return; }
+  document.getElementById('searchInput').value = val;
+  cargarLote(val);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function descargar() { toast('📄 Generando certificado PDF…'); setTimeout(() => window.print(), 600); }
+function compartir() {
+  const url = `https://huelladeorigen.osinfor.gob.pe/lote/${gtfActual}`;
+  if (navigator.share) navigator.share({ title: 'Verificación GTF ' + gtfActual, url });
+  else if (navigator.clipboard) { navigator.clipboard.writeText(url); toast('🔗 Enlace copiado'); }
+  else toast('🔗 ' + url);
+}
+function cambiarIdioma(lang) { toast(lang === 'en' ? '🌐 English version coming soon' : '🌐 Version française bientôt disponible'); }
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200); }
+
+window.addEventListener('load', () => {
+  const fromURL = window.location.pathname.split('/').pop();
+  const gtf = (fromURL && fromURL.includes('-')) ? fromURL : '017-00001729';
+  document.getElementById('searchInput').value = gtf;
+  cargarLote(gtf);
+});
+</script>
+</body>
+</html>

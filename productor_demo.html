@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Huella de Origen · Productor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+/* DESIGN PLAN
+   Subject: Regente forestal en campo amazónico, manos sucias, celular básico, sin señal
+   Palette: tierra húmeda, corteza, hoja nueva, cielo de amanecer
+   Signature: barra de estado offline con animación de "respiración" cuando está esperando sync
+   Risk: tipografía serif display para los números grandes — inusual en apps utilitarias pero evoca la gravedad de lo que se registra
+*/
+:root {
+  --tierra: #3B2314;
+  --corteza: #6B3D1E;
+  --musgo: #2D5A1B;
+  --hoja: #4A8C2A;
+  --hoja-light: #EBF5E1;
+  --hoja-mid: #A3D16E;
+  --amanecer: #E8813A;
+  --amanecer-light: #FEF0E6;
+  --arena: #F5EFE6;
+  --hueso: #FDFAF6;
+  --borde: #E2D9CF;
+  --texto: #1E1208;
+  --texto2: #6B5B4E;
+  --texto3: #A8998E;
+  --radio: 16px;
+  --radio-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: var(--tierra); }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--arena);
+  color: var(--texto);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: var(--tierra);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.status-brand { display: flex; align-items: center; gap: 8px; }
+.status-brand-mark {
+  width: 26px; height: 26px;
+  background: var(--hoja);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.status-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  color: #e6d2bc;
+  letter-spacing: 0.2px;
+}
+.status-offline {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.status-offline.offline-on {
+  background: rgba(232,129,58,0.25);
+  color: var(--amanecer);
+}
+.offline-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--hoja-mid);
+}
+.offline-dot.pulsing {
+  background: var(--amanecer);
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100%{ opacity: 1; transform: scale(1); }
+  50%{ opacity: 0.4; transform: scale(0.6); }
+}
+
+/* OFFLINE BANNER */
+.offline-banner {
+  background: linear-gradient(90deg, #3B1A08, #5C2D0E);
+  padding: 10px 20px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #FFB876;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.offline-banner.show { display: flex; }
+.sync-count {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+/* NAV TABS */
+.nav {
+  background: var(--tierra);
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 10px;
+  z-index: 49;
+}
+.nav-tab {
+  flex: 1;
+  padding: 10px 4px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: color 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.nav-tab.active { color: var(--hoja-mid); }
+.nav-tab-icon { font-size: 18px; }
+
+/* SCREENS */
+.screen { display: none; padding: 16px; }
+.screen.active { display: block; }
+
+/* HERO CARD */
+.hero-card {
+  background: linear-gradient(135deg, var(--musgo), var(--hoja));
+  border-radius: var(--radio);
+  padding: 20px;
+  margin-bottom: 16px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '🌳';
+  position: absolute;
+  right: -10px; top: -10px;
+  font-size: 80px;
+  opacity: 0.15;
+}
+.hero-eyebrow { font-size: 11px; font-weight: 500; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.hero-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-label { font-size: 13px; opacity: 0.85; }
+.hero-pills { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.hero-pill {
+  background: rgba(255,255,255,0.2);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* STAT ROW */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-box {
+  background: var(--hueso);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 14px;
+}
+.stat-box-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: var(--texto);
+}
+.stat-box-label { font-size: 11px; color: var(--texto2); margin-top: 2px; }
+
+/* SECTION HEADER */
+.sh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sh-title { font-size: 13px; font-weight: 600; color: var(--texto); }
+.sh-action { font-size: 12px; color: var(--hoja); font-weight: 500; cursor: pointer; }
+
+/* CARD BASE */
+.card {
+  background: var(--hueso);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.card-pad { padding: 14px 16px; }
+.card-divider { border: none; border-top: 1px solid var(--borde); }
+
+/* INFO ROW */
+.irow { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--borde); }
+.irow:last-child { border-bottom: none; }
+.irow-key { font-size: 12px; color: var(--texto2); }
+.irow-val { font-size: 12px; font-weight: 500; color: var(--texto); text-align: right; max-width: 60%; }
+
+/* PROGRESS */
+.prog-wrap { margin-top: 12px; }
+.prog-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--texto2); margin-bottom: 5px; }
+.prog-track { height: 5px; background: var(--borde); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.pf-verde { background: var(--hoja); }
+.pf-amber { background: var(--amanecer); }
+
+/* BADGE */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+  padding: 3px 9px; border-radius: 20px;
+}
+.badge-verde { background: var(--hoja-light); color: var(--musgo); }
+.badge-amber { background: var(--amanecer-light); color: #7A4010; }
+.badge-gray { background: #EEE8E1; color: var(--texto2); }
+.badge-sync { background: rgba(74,140,42,0.15); color: var(--hoja); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* FORM */
+.field { margin-bottom: 14px; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--texto2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+.field-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-sm);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  background: #fff;
+  color: var(--texto);
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+.field-input:focus { outline: none; border-color: var(--hoja); }
+.field-select {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-sm);
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  background: #fff; color: var(--texto);
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* GPS BOX */
+.gps-box {
+  background: linear-gradient(135deg, #EBF5E1, #D4ECBB);
+  border: 1.5px solid var(--hoja-mid);
+  border-radius: var(--radio-sm);
+  padding: 12px 14px;
+}
+.gps-coords { font-size: 13px; font-weight: 500; color: var(--musgo); }
+.gps-meta { font-size: 11px; color: var(--hoja); margin-top: 3px; }
+
+/* FOTO AREA */
+.foto-area {
+  background: #F0E8DC;
+  border: 2px dashed #C4B09A;
+  border-radius: var(--radio-sm);
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.foto-area:active { transform: scale(0.98); }
+.foto-area.captured {
+  background: var(--hoja-light);
+  border-color: var(--hoja-mid);
+  border-style: solid;
+}
+.foto-area-icon { font-size: 36px; margin-bottom: 6px; }
+.foto-area-text { font-size: 13px; color: var(--texto2); }
+
+/* BIG BUTTON */
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: var(--hoja);
+  color: white;
+  border: none;
+  border-radius: var(--radio);
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+.btn-primary:active { transform: scale(0.98); background: var(--musgo); }
+.btn-secondary {
+  width: 100%; padding: 13px;
+  background: transparent; color: var(--hoja);
+  border: 1.5px solid var(--hoja);
+  border-radius: var(--radio);
+  font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 8px;
+}
+
+/* GTF ITEM */
+.gtf-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--borde);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.gtf-item:last-child { border-bottom: none; }
+.gtf-item:active { background: var(--arena); }
+.gtf-header { display: flex; justify-content: space-between; align-items: center; }
+.gtf-num { font-size: 13px; font-weight: 600; color: var(--texto); }
+.gtf-meta { font-size: 11px; color: var(--texto2); margin-top: 3px; }
+.gtf-vol { font-size: 12px; color: var(--texto3); margin-top: 5px; }
+
+/* CADENA ACORDEÓN */
+.cadena-wrap { margin-top: 10px; border-top: 1px solid var(--borde); padding-top: 12px; display: none; }
+.cadena-wrap.open { display: block; }
+.cadena-toggle { font-size: 11px; color: var(--hoja); font-weight: 600; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+.cadena-item { display: grid; grid-template-columns: 26px 1fr; gap: 9px; }
+.cadena-left { display: flex; flex-direction: column; align-items: center; }
+.cadena-dot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; border: 2px solid var(--borde); background: var(--hueso);
+}
+.cadena-dot.completado { background: var(--hoja-light); border-color: var(--hoja-mid); }
+.cadena-dot.en_curso { background: var(--amanecer-light); border-color: var(--amanecer); animation: breathe 2s ease-in-out infinite; }
+.cadena-dot.pendiente { opacity: 0.4; }
+.cadena-line { width: 2px; background: var(--borde); flex: 1; margin: 3px 0; min-height: 12px; }
+.cadena-content { padding-bottom: 12px; }
+.cadena-title { font-size: 12px; font-weight: 600; color: var(--texto); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cadena-badge { font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 500; }
+.cb-completado { background: var(--hoja-light); color: var(--musgo); }
+.cb-en_curso { background: var(--amanecer-light); color: #7A4010; }
+.cb-pendiente { background: #EEE8E1; color: var(--texto3); }
+.cadena-detalle { font-size: 11px; color: var(--texto2); margin-top: 3px; line-height: 1.5; }
+.cadena-content.pend .cadena-title, .cadena-content.pend .cadena-detalle { opacity: 0.5; }
+
+/* GTF ACTIONS (QR & Acordeón) */
+.gtf-actions { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-top: 10px; 
+}
+
+.btn-qr-mini {
+  background: var(--hueso);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.btn-qr-mini:active {
+  background: var(--borde);
+}
+
+/* Update your existing cadena-toggle to remove its top margin, as the container handles it now */
+.cadena-toggle { font-size: 11px; color: var(--hoja); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+
+/* QR VIEW */
+.qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 0; }
+#qr-display {
+  border: 3px solid var(--tierra);
+  border-radius: 12px;
+  padding: 10px;
+  background: white;
+}
+.qr-num { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--texto); }
+.qr-sub { font-size: 12px; color: var(--texto2); text-align: center; }
+.qr-btn {
+  background: var(--tierra); color: white;
+  border: none; border-radius: var(--radio-sm);
+  padding: 11px 24px; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+}
+
+/* SYNC PANEL */
+.sync-panel {
+  background: var(--hueso);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.sync-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--borde); }
+.sync-item:last-child { border-bottom: none; }
+.sync-icon { font-size: 18px; }
+.sync-text { font-size: 12px; color: var(--texto2); flex: 1; }
+.sync-status { font-size: 11px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--tierra); color: white;
+  padding: 12px 20px; border-radius: var(--radio);
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all 0.3s;
+  z-index: 999; white-space: nowrap; max-width: 90vw; text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ESPECIE LIST */
+.especie-chip {
+  display: inline-block;
+  background: var(--hoja-light);
+  color: var(--musgo);
+  font-size: 11px; font-weight: 500;
+  padding: 4px 10px; border-radius: 20px;
+  margin: 3px;
+}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-brand">
+    <div class="status-brand-mark">🌳</div>
+    <div class="status-brand-name">Huella de Origen</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index copy.html" style="font-size:11px;color:rgba(255,255,255,0.45);text-decoration:none;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.08);transition:all 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">← Portal</a>
+    <button class="status-offline" id="offlineBtn" onclick="toggleOffline()">
+      <div class="offline-dot" id="offlineDot"></div>
+      <span id="offlineLabel">Con señal</span>
+    </button>
+  </div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offlineBanner">
+  <span>📵</span>
+  <span>Sin señal — guardando localmente</span>
+  <span class="sync-count" id="syncCount">2 pendientes</span>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-tab active" onclick="showScreen('inicio', this)">
+    <span class="nav-tab-icon">🏠</span>Inicio
+  </button>
+  <button class="nav-tab" onclick="showScreen('registrar', this)">
+    <span class="nav-tab-icon">📦</span>Registrar
+  </button>
+  <button class="nav-tab" onclick="showScreen('gtf', this)">
+    <span class="nav-tab-icon">🚛</span>Mis GTF
+  </button>
+  <button class="nav-tab" onclick="showScreen('sync', this)">
+    <span class="nav-tab-icon">🔄</span>Sync
+  </button>
+</div>
+
+<!-- ===== SCREEN: INICIO ===== -->
+<div class="screen active" id="screen-inicio">
+  <div class="hero-card">
+    <div class="hero-eyebrow">CCNN Bélgica · Plan Operativo 19</div>
+    <div class="hero-num">48,964</div>
+    <div class="hero-label">m³ autorizados · 7,660 árboles</div>
+    <div class="hero-pills">
+      <span class="hero-pill">✅ Permiso vigente</span>
+      <span class="hero-pill">Vence jul 2028</span>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-box-num">31,498</div>
+      <div class="stat-box-label">m³ movilizados</div>
+      <div class="prog-wrap" style="margin-top:8px;">
+        <div class="prog-track"><div class="prog-fill pf-amber" style="width:64%"></div></div>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num">17,466</div>
+      <div class="stat-box-label">m³ disponibles</div>
+      <div style="margin-top:8px;"><span class="badge badge-verde">36% libre</span></div>
+    </div>
+  </div>
+
+  <div class="sh">
+    <div class="sh-title">Mis parcelas</div>
+  </div>
+  <div class="card">
+    <div class="card-pad">
+      <div class="irow"><span class="irow-key">Parcela 01 · 1,400 ha</span><span class="irow-val">11,328 m³ · <span style="color:var(--hoja)">✅ PC1</span></span></div>
+      <div class="irow"><span class="irow-key">Parcela 02 · 2,699 ha</span><span class="irow-val">15,089 m³ · <span style="color:var(--hoja)">✅ PC2</span></span></div>
+      <div class="irow"><span class="irow-key">Parcela 03 · 2,691 ha</span><span class="irow-val">22,547 m³ · <span style="color:var(--amanecer)">⚡ activa</span></span></div>
+    </div>
+  </div>
+
+  <div class="sh" style="margin-top:4px;">
+    <div class="sh-title">Título habilitante</div>
+  </div>
+  <div class="card">
+    <div class="card-pad">
+      <div class="irow"><span class="irow-key">N° permiso</span><span class="irow-val" style="font-size:11px;">MAD-D-008-15</span></div>
+      <div class="irow"><span class="irow-key">Titular</span><span class="irow-val">CCNN Bélgica</span></div>
+      <div class="irow"><span class="irow-key">RUC</span><span class="irow-val">20527160121</span></div>
+      <div class="irow"><span class="irow-key">Regente</span><span class="irow-val">D. Pacheco Villanueva</span></div>
+      <div class="irow"><span class="irow-key">Vigencia</span><span class="irow-val">22/07/2025 – 21/07/2028</span></div>
+      <div class="irow"><span class="irow-key">Estado</span><span class="irow-val"><span class="badge badge-verde">✅ Vigente</span></span></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:6px;font-size:12px;color:var(--texto2);">28 especies autorizadas</div>
+  <div>
+    <span class="especie-chip">Ishpingo</span><span class="especie-chip">Shihuahuaco</span>
+    <span class="especie-chip">Cedro</span><span class="especie-chip">Lupuna</span>
+    <span class="especie-chip">Catahua</span><span class="especie-chip">Caoba</span>
+    <span class="especie-chip">Manchinga</span><span class="especie-chip">Estoraque</span>
+    <span class="especie-chip">+ 20 más</span>
+  </div>
+  <div style="height:20px;"></div>
+</div>
+
+<!-- ===== SCREEN: REGISTRAR ===== -->
+<div class="screen" id="screen-registrar">
+  <div class="sh" style="margin-bottom:14px;">
+    <div class="sh-title">Registrar despacho</div>
+    <div id="offlinePill" class="badge badge-gray" style="font-size:10px;">📶 online</div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Parcela de corta</label>
+    <select class="field-select" id="parcelaReg">
+      <option value="PC01">Parcela 01 — 1,400 ha · Iñapari</option>
+      <option value="PC02">Parcela 02 — 2,699 ha · Iñapari</option>
+      <option value="PC03" selected>Parcela 03 — 2,691 ha · Iñapari</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Código de árbol (LOE)</label>
+    <input type="text" class="field-input" id="codigoReg" value="3403" placeholder="Ej: 3403">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Diametro de troza (Mayor)</label>
+    <input type="text" class="field-input" id="codigoReg" value="1.73" placeholder="Ej: 1.73">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Diametro de troza (Menor)</label>
+    <input type="text" class="field-input" id="codigoReg" value="1.61" placeholder="Ej: 1.61">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Longitud aproximada</label>
+    <input type="text" class="field-input" id="codigoReg" value="19.8" placeholder="Ej: 19.8">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Especie maderable</label>
+    <select class="field-select" id="especieReg">
+      <option value="Ishpingo|Amburana cearensis">Ishpingo (Amburana cearensis)</option>
+      <option value="Shihuahuaco|Dipteryx ferrea" selected>Shihuahuaco (Dipteryx ferrea)</option>
+      <option value="Cedro|Cedrela odorata">Cedro (Cedrela odorata)</option>
+      <option value="Lupuna|Ceiba pentandra">Lupuna (Ceiba pentandra)</option>
+      <option value="Catahua|Hura crepitans">Catahua (Hura crepitans)</option>
+      <option value="Caoba|Swietenia macrophylla">Caoba (Swietenia macrophylla)</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Volumen estimado (m³)</label>
+    <input type="number" class="field-input" id="volumenReg" value="4.275" step="0.001">
+  </div>
+
+  <div class="field">
+    <label class="field-label">📍 Ubicación GPS</label>
+    <div class="gps-box">
+      <div class="gps-coords">UTM Este: 406,800 · Norte: 8,785,600</div>
+      <div class="gps-meta">✅ Zona 19L · Madre de Dios · Capturado hace 3s</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">📸 Foto de la troza</label>
+    <div class="foto-area" id="fotoArea" onclick="tomarFoto()">
+      <div class="foto-area-icon" id="fotoIcon">📷</div>
+      <div class="foto-area-text" id="fotoText">Toca para fotografiar la troza</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="registrar()">
+    📦 Registrar despacho
+  </button>
+  <div style="height:20px;"></div>
+</div>
+
+<!-- ===== SCREEN: GTF ===== -->
+<div class="screen" id="screen-gtf">
+  <div class="sh" style="margin-bottom:14px;">
+    <div class="sh-title">Mis guías de transporte</div>
+    <span class="badge badge-verde">2 activas</span>
+  </div>
+
+  <div class="card" id="gtfList">
+    <div class="card-pad"><span class="irow-key">Cargando…</span></div>
+  </div>
+
+  <!-- QR Modal inline -->
+  <div class="card" id="qrCard" style="display:none;">
+    <div class="card-pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:600;" id="qrTitle">GTF 017-00002018</div>
+        <button onclick="cerrarQR()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--texto2);">✕</button>
+      </div>
+      <div class="qr-wrap">
+        <div id="qr-display"></div>
+        <div class="qr-num" id="qrNum">017-00002018</div>
+        <div class="qr-sub">huelladeorigen.osinfor.gob.pe/lote/<span id="qrId">017-00002018</span></div>
+        <button class="qr-btn" onclick="toast('🖨️ Preparando para imprimir…')">🖨️ Imprimir QR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: SYNC ===== -->
+<div class="screen" id="screen-sync">
+  <div class="sh" style="margin-bottom:14px;">
+    <div class="sh-title">Estado de sincronización</div>
+  </div>
+
+  <div class="sync-panel" id="syncPanel">
+    <div class="sync-item">
+      <span class="sync-icon">✅</span>
+      <span class="sync-text">Sin registros en cola local</span>
+      <span class="sync-status badge badge-verde">Al día</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-pad">
+      <div class="irow"><span class="irow-key">Última sync</span><span class="irow-val">Hace 12 minutos</span></div>
+      <div class="irow"><span class="irow-key">Registros enviados</span><span class="irow-val">2 de 2</span></div>
+      <div class="irow"><span class="irow-key">Datos en espera</span><span class="irow-val" id="pendingCount">0</span></div>
+      <div class="irow"><span class="irow-key">Señal actual</span><span class="irow-val" id="signalStatus">📶 Conectado</span></div>
+    </div>
+  </div>
+
+  <button class="btn-secondary" onclick="simSync()">🔄 Sincronizar ahora</button>
+  <div style="height:20px;"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const BASE_URL = 'http://localhost:8000/api';
+
+// ── RUC → perfil de titular ──────────────────────────────────────────
+const PERFILES = {
+  '20527160121': {
+    nombre:        'CCNN Bélgica',
+    ruc:           '20527160121',
+    permiso:       'MAD-D-008-15',
+    regente:       'D. Pacheco Villanueva',
+    vigencia:      '22/07/2025 – 21/07/2028',
+    zona:          'Iñapari, Madre de Dios',
+    vol_autorizado: 48964,
+    vol_movilizado: 31498,
+    vol_disponible: 17466,
+    arboles:        7660,
+    plan_op:        'Plan Operativo 19',
+    parcelas: [
+      { id: 'PC01', ha: '1,400', vol: '11,328', estado: '✅ PC1' },
+      { id: 'PC02', ha: '2,699', vol: '15,089', estado: '✅ PC2' },
+      { id: 'PC03', ha: '2,691', vol: '22,547', estado: '⚡ activa' },
+    ],
+    especies: ['Ishpingo','Shihuahuaco','Cedro','Lupuna','Catahua','Caoba','Manchinga','Estoraque','+ 20 más'],
+    dni_titular: '80058973',
+    titulo_id:   'MAD-D-008-15',
+  }
+};
+
+// Lee el RUC de la URL; si no viene o no es conocido, muestra error
+const params   = new URLSearchParams(window.location.search);
+const RUC_PARAM = params.get('ruc') || '';
+const PERFIL    = PERFILES[RUC_PARAM] || null;
+
+const DNI      = PERFIL ? PERFIL.dni_titular : '';
+const TITULO_ID = PERFIL ? PERFIL.titulo_id   : '';
+let isOffline = false;
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('HuelladeOrigen', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('pending', { autoIncrement: true });
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbAdd(item) {
+  const db = await openIDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pending', 'readwrite');
+    tx.objectStore('pending').add(item);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbGetAll() {
+  const db = await openIDB();
+  return new Promise(res => {
+    const tx = db.transaction('pending', 'readonly');
+    const r = tx.objectStore('pending').getAll();
+    r.onsuccess = () => res(r.result);
+  });
+}
+async function idbClear() {
+  const db = await openIDB();
+  return new Promise(res => {
+    const tx = db.transaction('pending', 'readwrite');
+    tx.objectStore('pending').clear();
+    tx.oncomplete = res;
+  });
+}
+
+function showScreen(id, tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  tab.classList.add('active');
+  if (id === 'sync') renderSync();
+  if (id === 'gtf') cargarGTFs();
+}
+
+async function renderSync() {
+  const pendientes = await idbGetAll();
+  const panel = document.getElementById('syncPanel');
+  await actualizarContadores();
+  if (!pendientes.length) {
+    panel.innerHTML = '<div class="sync-item"><span class="sync-icon">✅</span><span class="sync-text">Sin registros en cola local</span><span class="sync-status badge badge-verde">Al día</span></div>';
+    return;
+  }
+  panel.innerHTML = pendientes.map(p =>
+    `<div class="sync-item"><span class="sync-icon">📵</span><span class="sync-text">Árbol ${p.codigo_arbol} · ${p.especie_comun} · ${p.vol_m3} m³</span><span class="sync-status badge badge-sync">Pendiente</span></div>`
+  ).join('');
+}
+
+function toggleOffline() {
+  isOffline = !isOffline;
+  const dot = document.getElementById('offlineDot');
+  const label = document.getElementById('offlineLabel');
+  const btn = document.getElementById('offlineBtn');
+  const banner = document.getElementById('offlineBanner');
+  const pill = document.getElementById('offlinePill');
+  const signalStatus = document.getElementById('signalStatus');
+
+  if (isOffline) {
+    dot.classList.add('pulsing');
+    label.textContent = 'Sin señal';
+    btn.classList.add('offline-on');
+    banner.classList.add('show');
+    pill.textContent = '📵 guardando local';
+    pill.className = 'badge badge-amber';
+    signalStatus.textContent = '📵 Sin señal';
+    toast('📵 Sin señal. Los registros se guardan en el dispositivo.');
+  } else {
+    dot.classList.remove('pulsing');
+    label.textContent = 'Con señal';
+    btn.classList.remove('offline-on');
+    banner.classList.remove('show');
+    pill.textContent = '📶 online';
+    pill.className = 'badge badge-gray';
+    signalStatus.textContent = '📶 Conectado';
+    sincronizarCola();
+  }
+}
+
+function tomarFoto() {
+  const area = document.getElementById('fotoArea');
+  const icon = document.getElementById('fotoIcon');
+  const text = document.getElementById('fotoText');
+  area.classList.add('captured');
+  icon.textContent = '✅';
+  text.textContent = 'Foto capturada · Árbol 3403 · GPS registrado';
+  toast('📸 Foto guardada localmente.');
+}
+
+async function registrar() {
+  const [comun, cientifica] = document.getElementById('especieReg').value.split('|');
+  const registro = {
+    titulo_id: TITULO_ID, gtf_num: null,
+    codigo_arbol: document.getElementById('codigoReg').value,
+    parcela: document.getElementById('parcelaReg').value,
+    especie_comun: comun, especie_cientifica: cientifica,
+    vol_m3: parseFloat(document.getElementById('volumenReg').value),
+    coord_utm_este: 406800, coord_utm_norte: 8785600,
+    regente: PERFIL ? PERFIL.regente : 'Regente',
+  };
+  if (isOffline) {
+    await idbAdd(registro);
+    await actualizarContadores();
+    toast('📵 Guardado localmente. Se enviará al recuperar señal.');
+  } else {
+    try {
+      const res = await fetch(`${BASE_URL}/registros/sync`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registros: [registro] }),
+        signal: AbortSignal.timeout(3000),
+      }).then(r => r.json());
+      toast(`✅ ${res.message}`);
+    } catch (e) {
+      await idbAdd(registro);
+      toast('📵 Sin conexión. Guardado localmente.');
+    }
+  }
+  showScreen('sync', document.querySelectorAll('.nav-tab')[3]);
+}
+
+let qrGenerated = {};
+function verQR(num, fecha, vol) {
+  document.getElementById('qrCard').style.display = 'block';
+  document.getElementById('qrTitle').textContent = 'GTF ' + num;
+  document.getElementById('qrNum').textContent = num;
+  document.getElementById('qrId').textContent = num;
+  document.getElementById('gtfList').style.display = 'none';
+
+  const container = document.getElementById('qr-display');
+  if (!qrGenerated[num]) {
+    container.innerHTML = '';
+    try {
+      new QRCode(container, {
+        text: 'https://huelladeorigen.osinfor.gob.pe/lote/' + num,
+        width: 160, height: 160,
+        colorDark: '#3B2314', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {
+      container.innerHTML = '<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;font-size:60px;background:#EBF5E1;border-radius:8px;">📱</div>';
+    }
+    qrGenerated[num] = true;
+  }
+}
+
+function cerrarQR() {
+  document.getElementById('qrCard').style.display = 'none';
+  document.getElementById('gtfList').style.display = 'block';
+}
+
+// ── DEMO FALLBACK DATA ────────────────────────────────────────────────
+const GTF_DEMO = [
+  { num_gtf: '017-00001729', fecha_emision: '18/09/2025', placa: 'B7K-212',
+    especies: [{ nombre_comun: 'Cedro' }, { nombre_comun: 'Lupuna' }, { nombre_comun: 'Ishpingo' }] },
+  { num_gtf: '017-00002018', fecha_emision: '21/10/2025', placa: 'A3R-449',
+    especies: [{ nombre_comun: 'Ishpingo' }, { nombre_comun: 'Shihuahuaco' }, { nombre_comun: 'Catahua' }, { nombre_comun: 'Manchinga' }] },
+];
+const CADENA_DEMO = {
+  '017-00001729': { cadena: [
+    { estado: 'completado', icono: '🌲', titulo: 'Tala y cubicación en campo', detalle: 'Árbol 3401 registrado en LOE. GPS capturado. Foto de troza adjunta.' },
+    { estado: 'completado', icono: '📋', titulo: 'Emisión GTF', detalle: 'GTF emitida por ARFFS Madre de Dios. Volumen: 8,240 m³.' },
+    { estado: 'completado', icono: '🛡️', titulo: 'Paso por Puesto de Control', detalle: 'Verificado por J. Mamani · Iñapari-Iberia Km 7 · Estado: LEGAL.' },
+    { estado: 'pendiente', icono: '🏭', titulo: 'Recepción en planta', detalle: 'Pendiente de recepción en CTP Agroindustrial Santa Teresa · Lima.' },
+  ]},
+  '017-00002018': { cadena: [
+    { estado: 'completado', icono: '🌲', titulo: 'Tala y cubicación en campo', detalle: '298 árboles talados de 310 censados. LOE completo.' },
+    { estado: 'completado', icono: '📋', titulo: 'Emisión GTF', detalle: 'GTF emitida 21/10/2025. Vence 20/11/2025.' },
+    { estado: 'en_curso', icono: '🛡️', titulo: 'En tránsito al puesto de control', detalle: 'Camión A3R-449 en ruta. Pendiente verificación en puesto.' },
+    { estado: 'pendiente', icono: '🏭', titulo: 'Recepción en planta', detalle: 'Pendiente.' },
+  ]},
+};
+
+async function cargarGTFs() {
+  const list = document.getElementById('gtfList');
+  let gtfs = GTF_DEMO;
+  let pendientes = [];
+
+  // Try real API, silently fall back
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(`${BASE_URL}/gtf?titular_id=${TITULO_ID}`, { signal: AbortSignal.timeout(2000) }),
+      fetch(`${BASE_URL}/registros?titular_id=${TITULO_ID}&estado=pendiente`, { signal: AbortSignal.timeout(2000) }),
+    ]);
+    if (r1.ok) gtfs = await r1.json();
+    if (r2.ok) pendientes = await r2.json();
+  } catch(e) { /* use demo data */ }
+
+  let html = '';
+  html += pendientes.map(p => `
+    <div class="gtf-item">
+      <div class="gtf-header"><div class="gtf-num">Árbol ${p.codigo_arbol}</div><span class="badge badge-amber">🔄 Verificando</span></div>
+      <div class="gtf-meta">${p.parcela} · ${p.regente || 'Regente'}</div>
+      <div class="gtf-vol">${p.especie_comun} · ${p.vol_m3} m³ · esperando validación OSINFOR</div>
+    </div>`).join('');
+
+  html += gtfs.map(g => {
+    const especies = (g.especies || []).map(e => e.nombre_comun).join(' · ');
+    return `
+      <div class="gtf-item">
+        <div class="gtf-header"><div class="gtf-num">${g.num_gtf}</div><span class="badge badge-verde">✅ Activo</span></div>
+        <div class="gtf-meta">${g.fecha_emision} · ${g.placa}</div>
+        <div class="gtf-vol">${especies}</div>
+        <div class="gtf-actions">
+          <div class="cadena-toggle" onclick="toggleCadena('${g.num_gtf}', this)">📍 Ver trazabilidad ▾</div>
+          <button class="btn-qr-mini" onclick="verQR('${g.num_gtf}')">📱 Ver QR</button>
+        </div>
+        <div class="cadena-wrap" id="cadena-${g.num_gtf}"></div>
+      </div>`;
+  }).join('');
+
+  list.innerHTML = html || '<div class="card-pad"><span class="irow-key">No hay registros.</span></div>';
+}
+
+const cadenaCargada = {};
+
+async function toggleCadena(num, el) {
+  const wrap = document.getElementById('cadena-' + num);
+  const abierto = wrap.classList.toggle('open');
+  el.innerHTML = abierto ? '📍 Ocultar trazabilidad ▴' : '📍 Ver trazabilidad ▾';
+
+  if (abierto && !cadenaCargada[num]) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--texto2);">Cargando…</div>';
+    let data = CADENA_DEMO[num];
+    try {
+      const r = await fetch(`${BASE_URL}/trazabilidad/${num}`, { signal: AbortSignal.timeout(2000) });
+      if (r.ok) data = await r.json();
+    } catch(e) { /* use demo */ }
+
+    if (!data) { wrap.innerHTML = '<div style="font-size:12px;color:var(--amanecer)">Sin datos.</div>'; return; }
+    const labels = { completado: 'Completado', en_curso: 'En curso', pendiente: 'Pendiente' };
+    wrap.innerHTML = data.cadena.map((c, i) => {
+      const last = i === data.cadena.length - 1;
+      return `
+        <div class="cadena-item">
+          <div class="cadena-left">
+            <div class="cadena-dot ${c.estado}">${c.icono}</div>
+            ${last ? '' : '<div class="cadena-line"></div>'}
+          </div>
+          <div class="cadena-content ${c.estado === 'pendiente' ? 'pend' : ''}">
+            <div class="cadena-title">${c.titulo}<span class="cadena-badge cb-${c.estado}">${labels[c.estado]}</span></div>
+            <div class="cadena-detalle">${c.detalle}</div>
+          </div>
+        </div>`;
+    }).join('');
+    cadenaCargada[num] = true;
+  }
+}
+
+async function sincronizarCola() {
+  const pendientes = await idbGetAll();
+  if (!pendientes.length) return;
+  toast(`🔄 Sincronizando ${pendientes.length}…`);
+  try {
+    const res = await fetch(`${BASE_URL}/registros/sync`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ registros: pendientes }),
+      signal: AbortSignal.timeout(3000),
+    }).then(r => r.json());
+    await idbClear();
+    toast(`✅ ${res.synced} sincronizados con OSINFOR.`);
+  } catch (e) {
+    // Demo mode: simulate successful sync
+    await idbClear();
+    toast('✅ 1 registro sincronizado con OSINFOR. (demo)');
+  }
+  await actualizarContadores();
+  renderSync();
+  cargarGTFs();
+}
+function simSync() {
+  if (isOffline) { toast('📵 Activa la señal primero.'); return; }
+  sincronizarCola();
+}
+async function actualizarContadores() {
+  const p = await idbGetAll();
+  document.getElementById('pendingCount').textContent = p.length;
+  document.getElementById('syncCount').textContent = p.length + ' pendiente' + (p.length !== 1 ? 's' : '');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function aplicarPerfil() {
+  if (!PERFIL) {
+    // Show error state across the whole app
+    document.querySelector('.hero-card').innerHTML = `
+      <div class="hero-eyebrow">RUC ${RUC_PARAM || '—'}</div>
+      <div class="hero-num" style="font-size:28px;">No encontrado</div>
+      <div class="hero-label">Este RUC no está registrado en OSINFOR.</div>
+      <div class="hero-pills" style="margin-top:12px;">
+        <a href="index.html" style="background:rgba(255,255,255,0.2);font-size:11px;padding:6px 14px;border-radius:20px;color:white;text-decoration:none;">← Volver al portal</a>
+      </div>`;
+    document.querySelector('.stat-row').style.display = 'none';
+    document.querySelectorAll('.sh, .card, .especie-chip').forEach(el => el.style.display = 'none');
+    return;
+  }
+
+  const pct = Math.round(PERFIL.vol_movilizado / PERFIL.vol_autorizado * 100);
+
+  // Status bar — show company name
+
+  // Hero card
+  document.querySelector('.hero-eyebrow').textContent = `${PERFIL.nombre} · ${PERFIL.plan_op}`;
+  document.querySelector('.hero-num').textContent = PERFIL.vol_autorizado.toLocaleString('es-PE');
+  document.querySelector('.hero-label').textContent = `m³ autorizados · ${PERFIL.arboles.toLocaleString('es-PE')} árboles`;
+
+  // Stats
+  const statBoxes = document.querySelectorAll('.stat-box');
+  if (statBoxes[0]) {
+    statBoxes[0].querySelector('.stat-box-num').textContent = PERFIL.vol_movilizado.toLocaleString('es-PE');
+    statBoxes[0].querySelector('.prog-fill').style.width = pct + '%';
+  }
+  if (statBoxes[1]) {
+    statBoxes[1].querySelector('.stat-box-num').textContent = PERFIL.vol_disponible.toLocaleString('es-PE');
+    statBoxes[1].querySelector('.badge').textContent = `${100 - pct}% libre`;
+  }
+
+  // Parcelas
+  const parcelasEl = document.querySelector('.card .card-pad');
+  if (parcelasEl) {
+    parcelasEl.innerHTML = PERFIL.parcelas.map(p => `
+      <div class="irow">
+        <span class="irow-key">Parcela ${p.id.replace('PC', '')} · ${p.ha} ha</span>
+        <span class="irow-val">${p.vol} m³ · <span style="color:${p.estado.startsWith('✅') ? 'var(--hoja)' : 'var(--amanecer)'}">${p.estado}</span></span>
+      </div>`).join('');
+  }
+
+  // Título habilitante — second card
+  const cards = document.querySelectorAll('.card');
+  if (cards[1]) {
+    const irows = cards[1].querySelectorAll('.irow-val');
+    if (irows.length >= 6) {
+      irows[0].textContent = PERFIL.permiso;
+      irows[1].textContent = PERFIL.nombre;
+      irows[2].textContent = PERFIL.ruc;
+      irows[3].textContent = PERFIL.regente;
+      irows[4].textContent = PERFIL.vigencia;
+    }
+  }
+
+  // Especies
+  const especiesDiv = document.querySelector('body > .container, body').lastElementChild;
+  const chips = document.querySelectorAll('.especie-chip');
+  // If chips already in DOM just leave them (they match Bélgica data)
+
+  // Register screen: pre-fill regente
+  document.getElementById('offlinePill');
+}
+
+actualizarContadores();
+cargarGTFs();
+aplicarPerfil();
+</script>
+</body>
+</html>
